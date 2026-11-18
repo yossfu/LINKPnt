@@ -1,65 +1,64 @@
 package com.linkpoint.ui.settings
-import java.util.*
 
 import com.google.common.collect.ImmutableList
 
-enum class NotificationType {
+/**
+ * Tipos de notificación (chat local, IM privado, mensaje de grupo).
+ *
+ * Reescrito en Kotlin real a partir del Java descompilado (campos
+ * `private String x` con constructor Java, bloque `static`, etc.).
+ * Cada entrada guarda sus claves de preferencia; [VALUES] es la
+ * lista en orden de declaración y
+ * [VALUES_BY_DESCENDING_PRIORITY] en orden Private, Group, LocalChat.
+ * Se mantienen los getters `get*Key()` / `getPriority()` que usan
+ * los demás archivos.
+ */
+enum class NotificationType(
+    val priority: Int,
+    val prefScreenKey: String,
+    val enableKey: String,
+    val playSoundKey: String,
+    val ringtoneKey: String,
+    val blinkKey: String,
+    val blinkColorKey: String
+) {
     LocalChat(0, "notify_local_chat", "enableNotifyLocalChat", "soundOnLocalChat", "notifySoundLocalChat", "notifyLEDchatIMs", "notifyLEDColorChatIMs"),
     Private(2, "notify_private_im", "enableNotifyPrivateIM", "soundOnPrivateIM", "notifySoundPrivateIM", "notifyLEDprivateIMs", "notifyLEDColorPrivateIMs"),
-    Group(1, "notify_group_messages", "enableNotifyGroupMessage", "soundOnGroupMessage", "notifySoundGroupMessage", "notifyLEDgroupMessages", "notifyLEDColorGroupMessages")
-    
-    @JvmStatic
-    ImmutableList<NotificationType> VALUES
-    @JvmStatic
-    ImmutableList<NotificationType> VALUES_BY_DESCENDING_PRIORITY
-    private String blinkColorKey
-    private String blinkKey
-    private String enableKey
-    private String playSoundKey
-    private String prefScreenKey
-    private Int priority
-    private String ringtoneKey
+    Group(1, "notify_group_messages", "enableNotifyGroupMessage", "soundOnGroupMessage", "notifySoundGroupMessage", "notifyLEDgroupMessages", "notifyLEDColorGroupMessages");
 
-    static {
-        VALUES = ImmutableList.copyOf((Array<E>) values())
-        VALUES_BY_DESCENDING_PRIORITY = ImmutableList.of(Private, Group, LocalChat)
+    fun getBlinkColorKey(): String {
+        return blinkColorKey
     }
 
-    private NotificationType(Int i, String str, String str2, String str3, String str4, String str5, String str6) {
-        this.priority = i
-        this.prefScreenKey = str
-        this.enableKey = str2
-        this.playSoundKey = str3
-        this.ringtoneKey = str4
-        this.blinkKey = str5
-        this.blinkColorKey = str6
+    fun getBlinkKey(): String {
+        return blinkKey
     }
 
-     public fun getBlinkColorKey(): String {
-        return this.blinkColorKey
+    fun getEnableKey(): String {
+        return enableKey
     }
 
-     public fun getBlinkKey(): String {
-        return this.blinkKey
+    fun getPlaySoundKey(): String {
+        return playSoundKey
     }
 
-     public fun getEnableKey(): String {
-        return this.enableKey
+    fun getPrefScreenKey(): String {
+        return prefScreenKey
     }
 
-     public fun getPlaySoundKey(): String {
-        return this.playSoundKey
+    fun getPriority(): Int {
+        return priority
     }
 
-     public fun getPrefScreenKey(): String {
-        return this.prefScreenKey
+    fun getRingtoneKey(): String {
+        return ringtoneKey
     }
 
-     public fun getPriority(): Int {
-        return this.priority
-    }
+    companion object {
+        @JvmField
+        val VALUES: ImmutableList<NotificationType> = ImmutableList.copyOf(entries)
 
-     public fun getRingtoneKey(): String {
-        return this.ringtoneKey
+        @JvmField
+        val VALUES_BY_DESCENDING_PRIORITY: ImmutableList<NotificationType> = ImmutableList.of(Private, Group, LocalChat)
     }
 }

@@ -1,9 +1,10 @@
 package com.linkpoint.ui.settings
 
-class ThemeChangedEvent {
-    val Int themeResourceId
-
-    public ThemeChangedEvent(Int i) {
-        this.themeResourceId = i
-    }
-}
+/**
+ * Evento publicado en el bus cuando cambia el tema seleccionado.
+ *
+ * Reescrito en Kotlin real: el original era Java descompilado
+ * (`val Int themeResourceId`, constructor Java). Lo publica
+ * `GlobalOptions` y lo recibe `ThemedActivity`.
+ */
+class ThemeChangedEvent(val themeResourceId: Int)
