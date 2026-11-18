@@ -1,0 +1,49 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+build/
+.gradle/
+local.properties
+proguard/
+*.log
+.navigation/
+captures/
+*.iml
+.idea/
+*.iws
+*.ipr
+.externalNativeBuild
+.cxx/
+vcs.xml
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Signing files - NEVER commit these!
+*.keystore
+*.jks
+keystore.properties
+signing.properties
+release.keystore
+debug.keystore
+
+# Environment files
+*.env
+*.env.*
