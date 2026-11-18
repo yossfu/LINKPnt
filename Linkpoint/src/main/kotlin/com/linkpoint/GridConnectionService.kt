@@ -3,12 +3,6 @@ package com.linkpoint
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import com.linkpoint.slproto.SLGridConnection
-import com.linkpoint.slproto.users.ChatterID
-import com.linkpoint.slproto.users.manager.UserManager
-import com.linkpoint.voice.common.messages.VoiceRinging
-import com.linkpoint.voice.common.model.VoiceLoginInfo
-import com.linkpoint.voiceintf.VoicePluginServiceConnection
 import java.lang.ref.WeakReference
 
 /**
@@ -20,11 +14,14 @@ import java.lang.ref.WeakReference
  * login. NO hay conexión UDP, ni circuito, ni login real todavía; eso es una
  * fase posterior y se implementará de verdad, no simulado.
  *
- * Mantiene la API pública que usan los llamadores del árbol (LoginActivity,
- * ConnectedActivity, TeleportSLURLActivity, SLVoice, VoiceStatusView y
- * SLAgentCircuit): la acción de login, getGridConnection(), getServiceInstance(),
- * hasVisibleActivities() y los métodos de voz delegados al plugin. Todos
- * devuelven valores seguros (null / false) y no hacen nada.
+ * Adelgazado para el cierre de login (2026-11-18): la versión anterior del
+ * stub importaba SLGridConnection, ChatterID, UserManager y tipos de voz,
+ * archivos de 400-600 líneas en Java descompilado que arrastraban medio
+ * árbol al conjunto de compilación. Esos métodos (getGridConnection(),
+ * acceptVoiceCall(), startVoice(), etc.) y su API pública volverán cuando se
+ * implemente la conexión real; ningún archivo del cierre de login los usa.
+ * Solo se conserva lo que necesita el arranque: la acción de login, la
+ * instancia del servicio y el estado de actividades visibles.
  */
 class GridConnectionService : Service() {
 
@@ -32,13 +29,6 @@ class GridConnectionService : Service() {
         const val LOGIN_ACTION: String = "com.linkpoint.ACTION_LOGIN"
 
         private var serviceInstance: WeakReference<GridConnectionService>? = null
-
-        /**
-         * Sin conexión real: siempre null. Los llamadores ya comprueban null
-         * antes de usar la conexión.
-         */
-        @JvmStatic
-        fun getGridConnection(): SLGridConnection? = null
 
         @JvmStatic
         fun getServiceInstance(): GridConnectionService? = serviceInstance?.get()
@@ -66,36 +56,5 @@ class GridConnectionService : Service() {
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
-    }
-
-    // --- Voz (sin voz todavía; todo no-op, como el stub de VoicePluginServiceConnection) ---
-
-    fun acceptVoiceCall(chatterID: ChatterID) {
-        // Sin voz todavía.
-    }
-
-    fun acceptVoiceCall(voiceRinging: VoiceRinging) {
-        // Sin voz todavía.
-    }
-
-    fun enableVoiceMic(enabled: Boolean) {
-        // Sin voz todavía.
-    }
-
-    /**
-     * Sin plugin de voz conectado: siempre null. Los llamadores ya comprueban null.
-     */
-    fun getVoicePluginServiceConnection(): VoicePluginServiceConnection? = null
-
-    fun startVoice(voiceLoginInfo: VoiceLoginInfo, userManager: UserManager) {
-        // Sin voz todavía.
-    }
-
-    fun stopVoice() {
-        // Sin voz todavía.
-    }
-
-    fun terminateVoiceCall(chatterID: ChatterID) {
-        // Sin voz todavía.
     }
 }

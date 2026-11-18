@@ -1,7 +1,6 @@
 package com.linkpoint
 
 import android.app.AlarmManager
-import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -9,7 +8,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager.NameNotFoundException
 import android.content.res.AssetManager
 import android.preference.PreferenceManager
-import androidx.core.app.NotificationCompat
 import androidx.multidex.MultiDex
 import androidx.multidex.MultiDexApplication
 import android.util.DisplayMetrics
@@ -18,7 +16,6 @@ import android.view.Display
 import android.view.WindowManager
 import com.linkpoint.debug.AutoLogUploader
 import com.linkpoint.fixes.ResourceConflictResolver
-import com.linkpoint.modern.samples.ModernLinkpointDemo
 import com.linkpoint.ui.login.CleanLoginActivity
 import kotlin.math.sqrt
 
@@ -28,6 +25,11 @@ import kotlin.math.sqrt
  * Handles global application state, resource conflict resolution, and system-wide initialization.
  * Updated to use AndroidX libraries and modern Android development practices.
  * Extends MultiDexApplication to support large applications with 64K+ methods.
+ *
+ * Hito de login (2026-11-18): los componentes modernos (ModernLinkpointDemo,
+ * 639 líneas de Java descompilado, y sus 6 dependencias, ~2.800 líneas) NO se
+ * instancian: la app arranca en modo seguro y abre la pantalla de login.
+ * Se reintroducirán de verdad en fases posteriores, no como demo simulada.
  */
 class LinkpointApp : MultiDexApplication() {
 
@@ -41,9 +43,6 @@ class LinkpointApp : MultiDexApplication() {
         private val prefs: SharedPreferences by lazy {
             PreferenceManager.getDefaultSharedPreferences(mContext)
         }
-
-        // Modern components
-        private var modernDemo: ModernLinkpointDemo? = null
 
         private fun isContextInitialized(): Boolean = ::mContext.isInitialized
 
@@ -69,18 +68,7 @@ class LinkpointApp : MultiDexApplication() {
             val status: StringBuilder = StringBuilder()
             status.append("Linkpoint Application Status:\n")
             status.append("- Context: OK\n")
-            status.append("- Modern Components: ").append(if (modernDemo != null) "Active" else "Safe Mode").append("\n")
-
-            if (modernDemo != null) {
-                try {
-                    status.append("- Graphics: ").append(modernDemo!!.getGraphicsInfo()).append("\n")
-                    status.append("- Connection: ").append(if (modernDemo!!.isConnected()) "Connected" else "Disconnected").append("\n")
-                } catch (e: Exception) {
-                    status.append("- Component Status: Error checking - ").append(e.message).append("\n")
-                }
-            } else {
-                status.append("- Running in Safe Mode - basic functionality only\n")
-            }
+            status.append("- Modern Components: Safe Mode (desactivados en el hito de login)\n")
 
             return status.toString()
         }
@@ -178,14 +166,6 @@ class LinkpointApp : MultiDexApplication() {
                 Log.e(TAG, "Failed to restart app", e)
             }
         }
-
-        /**
-         * Get modern components demo instance
-         */
-        @JvmStatic
-        fun getModernDemo(): ModernLinkpointDemo? {
-            return modernDemo
-        }
     }
 
     override fun onCreate() {
@@ -208,10 +188,13 @@ class LinkpointApp : MultiDexApplication() {
             }
 
             // Initialize global options after resource conflicts are resolved
-            // GlobalOptions.getInstance().initialize();  // Temporarily disabled due to dependencies
+            // GlobalOptions.getInstance().initialize();  // Fuera del cierre de
+            // login: GlobalOptions arrastra cientos de archivos rotos; no se
+            // usa en la pantalla de login.
 
-            // Initialize modern Linkpoint components with comprehensive exception handling
-            initializeModernSystems()
+            // Componentes modernos desactivados en el hito de login (ver
+            // comentario en la cabecera de la clase).
+            Log.w(TAG, "Modern components disabled for the login milestone - Safe Mode")
 
             // Initialize automatic log upload for debug builds
             initializeDebugLogUpload()
@@ -237,103 +220,9 @@ class LinkpointApp : MultiDexApplication() {
                 Log.e(TAG, "Native library linking failed: " + e.message)
             }
 
-            // Set a safe fallback state
-            modernDemo = null
             Log.w(TAG, "Application will continue in SAFE MODE with basic functionality only")
 
             // Don't re-throw - allow the app to continue running
-        }
-    }
-
-    /**
-     * Initialize modern Second Life protocol and rendering systems
-     * Uses defensive programming to prevent crashes if modern components fail
-     */
-    private fun initializeModernSystems() {
-        Log.i(TAG, "Initializing modern Linkpoint components...")
-
-        try {
-            // Pre-flight checks before initializing modern components
-            if (!performSystemChecks()) {
-                Log.w(TAG, "System compatibility checks failed - skipping modern components")
-                modernDemo = null
-                return
-            }
-
-            // Initialize modern components with individual exception handling
-            modernDemo = ModernLinkpointDemo(this)
-            Log.i(TAG, "Modern Linkpoint systems initialized successfully")
-        } catch (e: NoClassDefFoundError) {
-            Log.e(TAG, "Modern system class not found - likely missing dependency", e)
-            Log.e(TAG, "Missing class: " + e.message)
-            modernDemo = null
-        } catch (e: UnsatisfiedLinkError) {
-            Log.e(TAG, "Native library linking failed - modern graphics features will be disabled", e)
-            Log.e(TAG, "Library linking error: " + e.message)
-            modernDemo = null
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Security error during modern system initialization", e)
-            modernDemo = null
-        } catch (e: OutOfMemoryError) {
-            Log.e(TAG, "Out of memory during modern system initialization", e)
-            modernDemo = null
-            // Force garbage collection
-            System.gc()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize modern systems - continuing with graceful degradation", e)
-            modernDemo = null
-
-            // Log specific error for debugging
-            Log.e(TAG, "Modern component initialization failed: " + e.javaClass.simpleName + " - " + e.message)
-        } catch (t: Throwable) {
-            // Catch any other throwables that might occur
-            Log.e(TAG, "Unexpected error during modern system initialization", t)
-            modernDemo = null
-        }
-
-        // Log final status
-        if (modernDemo != null) {
-            Log.i(TAG, "Modern components active - full feature set available")
-        } else {
-            Log.w(TAG, "Modern components disabled - using legacy compatibility mode")
-            Log.w(TAG, "App will function with basic Second Life viewer features only")
-        }
-    }
-
-    /**
-     * Perform system compatibility checks before initializing modern components
-     */
-    private fun performSystemChecks(): Boolean {
-        try {
-            // Check if we have a valid context
-            if (!isContextInitialized()) {
-                Log.e(TAG, "Context is null - cannot initialize modern components")
-                return false
-            }
-
-            // Check if we have basic Android API requirements
-            val apiLevel: Int = android.os.Build.VERSION.SDK_INT
-            if (apiLevel < 21) { // API 21 = Android 5.0 minimum
-                Log.w(TAG, "Android API level " + apiLevel + " below minimum for modern components (21)")
-                return false
-            }
-
-            // Check available memory
-            val runtime: Runtime = Runtime.getRuntime()
-            val freeMemory: Long = runtime.freeMemory()
-            val totalMemory: Long = runtime.totalMemory()
-            val memoryUsage: Double = (totalMemory - freeMemory).toDouble() / totalMemory.toDouble()
-
-            if (memoryUsage > 0.8) { // If using more than 80% of heap
-                Log.w(TAG, "Memory usage too high (" + (memoryUsage * 100) + "%) - skipping modern components")
-                return false
-            }
-
-            Log.i(TAG, "System checks passed - proceeding with modern component initialization")
-            return true
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during system checks", e)
-            return false
         }
     }
 

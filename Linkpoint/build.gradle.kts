@@ -93,6 +93,40 @@ android {
             kotlin.srcDirs("src/main/java", "src/main/kotlin")
             res.srcDirs("src/main/res")
             assets.srcDirs("src/main/assets")
+
+            // Hito de login (2026-11-18): solo se compila el cierre de login.
+            // De los 1.221 archivos .kt del árbol, ~897 son Java descompilado
+            // que no compila como Kotlin; reescribirlos uno por uno no es
+            // viable y el run #8 falló con miles de errores en
+            // :compileDebugKotlin. Con `include` (lista no vacía = solo
+            // coinciden estos archivos) el conjunto de compilación queda
+            // limitado a los 5 archivos que necesita el arranque hasta la
+            // pantalla de login; el resto del árbol sigue en el repo pero
+            // fuera de la compilación. Se pone en java Y en kotlin porque
+            // el plugin de Kotlin para Android toma fuentes de ambos
+            // conjuntos (los .kt de src/main/java también compilarían).
+            // Se usa llamada directa a include() sobre cada conjunto:
+            // `java { ... }` como bloque no es sintaxis válida del DSL
+            // Kotlin de AGP.
+            java.include(
+                "**/LinkpointApp.kt",
+                "**/GridConnectionService.kt",
+                "**/ui/login/CleanLoginActivity.kt",
+                "**/debug/AutoLogUploader.kt",
+                "**/fixes/ResourceConflictResolver.kt"
+            )
+            kotlin.include(
+                "**/LinkpointApp.kt",
+                "**/GridConnectionService.kt",
+                "**/ui/login/CleanLoginActivity.kt",
+                "**/debug/AutoLogUploader.kt",
+                "**/fixes/ResourceConflictResolver.kt"
+            )
+            // Para ampliar el cierre en fases posteriores, añadir aquí el
+            // archivo (ya reescrito en Kotlin real o stubbeado) que pida el
+            // compilador. El manifest sigue declarando el resto de
+            // actividades/servicios; el merger no exige que sus clases
+            // existan, y la pantalla de login no los lanza.
         }
     }
     
