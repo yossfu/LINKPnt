@@ -36,12 +36,17 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'gradle'
 
+      # Corregido tras el run #1: setup-android v3/v4 ya NO acepta
+      # api-level, build-tools, cmake ni ndk (eran entradas de v2).
+      # Las únicas entradas válidas son cmdline-tools-version,
+      # accept-android-sdk-licenses, log-accepted-android-sdk-licenses
+      # y packages. Verificado en
+      # https://github.com/android-actions/setup-android (README y
+      # action.yml de v4, 2026-11-18).
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
-          api-level: ${{ env.ANDROID_SDK_VERSION }}
-          build-tools: 34.0.0
-          cmake: 3.22.1
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0 cmake;3.22.1'
 
       - name: Grant execute permission for gradlew
         run: |
