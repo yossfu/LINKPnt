@@ -34,7 +34,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          # Sin cache: 'gradle' aquí: setup-gradle gestiona la caché
+          # y su doc advierte contra combinar ambos mecanismos.
 
       # Corregido tras el run #1: setup-android v3/v4 ya NO acepta
       # api-level, build-tools, cmake ni ndk (eran entradas de v2).
@@ -48,15 +49,22 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0 cmake;3.22.1'
 
-      - name: Grant execute permission for gradlew
-        run: |
-          cd Linkpoint
-          chmod +x gradlew
+      # Corregido tras el run #2: el wrapper de Gradle está incompleto
+      # en el material original (falta gradle-wrapper.jar; solo existe
+      # gradle-wrapper.properties, Gradle 8.5), así que ./gradlew no
+      # puede arrancar. Se instala Gradle 8.5 con setup-gradle y se
+      # corre `gradle` directamente. Verificado en la doc de
+      # gradle/actions/setup-gradle, "Build with a specific Gradle
+      # version" (2026-11-18).
+      - name: Setup Gradle 8.5
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.5'
 
       - name: Build Debug APK
         run: |
           cd Linkpoint
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          gradle assembleDebug --stacktrace --no-daemon
         env:
           GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
 
